@@ -1,6 +1,7 @@
 package server
 
 import (
+	"aula-chi/internal/models"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -27,5 +28,35 @@ func TestHandler(t *testing.T) {
 	}
 	if expected != string(body) {
 		t.Errorf("expected response body to be %v; got %v", expected, string(body))
+	}
+}
+
+func setupTestServer() *Server {
+	return &Server{
+		productsDatabase: []models.Product{
+			{
+				Id:       1,
+				Name:     "Test Product",
+				Price:    "99.99",
+				Category: "Geral",
+				Owner:    1,
+			},
+		},
+		userDatabase: []models.User{
+			{
+				Id:    1,
+				Name:  "Test User",
+				Email: "test@example.com",
+				Products: []models.Product{
+					{
+						Id:       1,
+						Name:     "Test Product",
+						Price:    "99.99",
+						Category: "Geral",
+						Owner:    1,
+					},
+				},
+			},
+		},
 	}
 }

@@ -4,10 +4,10 @@ import (
 	"aula-chi/internal/models"
 	"aula-chi/internal/utils"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/charmbracelet/log"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -29,7 +29,7 @@ func (s *Server) CreateNewProductHandler(w http.ResponseWriter, r *http.Request)
 func (s *Server) GetSpecificProductHandler(w http.ResponseWriter, r *http.Request) {
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productID"), 10, 32)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid product ID.")
 		return
 	}
@@ -51,7 +51,7 @@ func (s *Server) EditProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var updatedProducts models.Product
 	if err := json.NewDecoder(r.Body).Decode(&updatedProducts); err != nil {
-		log.Println(err)
+		log.Error(err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request paylod.")
 		return
 	}
@@ -70,6 +70,7 @@ func (s *Server) EditProductHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	productId, err := strconv.ParseUint(chi.URLParam(r, "productID"), 10, 32)
 	if err != nil {
+		log.Error(err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid Product ID.")
 		return
 	}

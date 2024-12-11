@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/charmbracelet/log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,6 +12,7 @@ import (
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	r.Get("/", s.HelloWorldHandler)
 	r.Route("/users", func(r chi.Router) {
@@ -34,7 +35,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	})
 
-	log.Println("Server alive and running!")
+	log.Info("Server alive and running!")
 	return r
 }
 
