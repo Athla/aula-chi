@@ -24,6 +24,19 @@ type User struct {
 	Products []Product `json:"products"`
 }
 
+// Wrapper/Abstracao para a resposta de erro
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	respondWithJSON(w, code, map[string]string{"error": message})
+}
+
+// Wrapper/Abstracao para a resposta de JSON
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
 func main() {
 	var usersDatabase []User
 	var productDatabase []Product
@@ -39,10 +52,12 @@ func main() {
 
 	// Top level route definida para manter a logica num so lugar. Em um projeto real, provavel que estaria num arquivo separado (pt 2 se der tempo)
 	r.Route("/users", func(r chi.Router) {
+		// Retorna todos os users
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			respondWithJSON(w, http.StatusOK, usersDatabase)
 		})
 
+		// Cria novo user, fazendo a json validation atraves do decoder, usando um pointer ao user
 		r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 			var user User
 			if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -54,6 +69,8 @@ func main() {
 			respondWithJSON(w, http.StatusCreated, user)
 		})
 
+		// Nesting de rotas para as funcionalidades referente a user spec
+		// Util quando sao mts funcionalidade
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 				userID, err := strconv.ParseUint(chi.URLParam(r, "userID"), 10, 32)
@@ -116,10 +133,12 @@ func main() {
 
 	// Outra top level route, definida para desacoplar as coisas
 	r.Route("/products", func(r chi.Router) {
+		// Pega todos os produtos
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			respondWithJSON(w, http.StatusOK, productDatabase)
 		})
 
+		// Cria um novo produto
 		r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 			var product Product
 			if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
@@ -140,6 +159,7 @@ func main() {
 			respondWithJSON(w, http.StatusCreated, product)
 		})
 
+		// Funcionalidades referente a item especifico
 		r.Route("/{productID}", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 				productID, err := strconv.ParseUint(chi.URLParam(r, "productID"), 10, 32)
@@ -202,15 +222,4 @@ func main() {
 
 	fmt.Println("Server running on port 3000")
 	http.ListenAndServe(":3000", r)
-}
-
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
 }
